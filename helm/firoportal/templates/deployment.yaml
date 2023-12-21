@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "firoportal.fullname" . }}
+  labels:
+{{ include "firoportal.labels" . | indent 4 }}
+spec:
+  strategy: 
+    type: {{ .Values.tethys.updateStrategy | quote }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "firoportal.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "firoportal.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: ALLOWED_HOSTS
+              value: "\"[{{- range .Values.ingress.hosts }}{{ .host }},{{- end }}]\""
+            - name: TETHYS_PUBLIC_HOST
+              value: {{ (index .Values.ingress.hosts 0).host | quote }}
+            - name: POSTGRES_PASSWORD 
+              value: {{ .Values.postgis.postgres_password | quote }} 
+            - name: TETHYS_DB_NAME
+              value: {{ .Values.tethys.database.tethys_db_name | quote }}
+            - name: TETHYS_DB_USERNAME
+              value: {{ .Values.tethys.database.tethys_db_username | quote }}
+            - name: TETHYS_DB_PASSWORD
+              value: {{ .Values.tethys.database.tethys_db_password | quote }}
+            - name: TETHYS_DB_HOST
+              value: {{ .Values.postgis.fullnameOverride | quote }}
+            - name: TETHYS_DB_PORT
+              value: "5432"
+            - name: TETHYS_DB_SUPERUSER
+              value: {{ .Values.tethys.database.tethys_db_superuser | quote }}
+            - name: TETHYS_DB_SUPERUSER_PASS
+              value: {{ .Values.tethys.database.tethys_db_superuser_pass | quote }}
+            - name: PORTAL_SUPERUSER_NAME
+              value: {{ .Values.tethys.super_user.username | quote }}
+            - name: PORTAL_SUPERUSER_EMAIL
+              value: {{ .Values.tethys.super_user.email | quote }}
+            - name: PORTAL_SUPERUSER_PASSWORD
+              value: {{ .Values.tethys.super_user.password | quote }}
+            - name: APP_DB_HOST
+              value: {{ .Values.postgis.fullnameOverride | quote }}
+            - name: APP_DB_PORT
+              value: "5432"
+            - name: APP_DB_USERNAME
+              value: {{ .Values.tethys.database.tethys_db_superuser | quote }}
+            - name: APP_DB_PASSWORD
+              value: {{ .Values.tethys.database.tethys_db_superuser_pass | quote }}
+            - name: TETHYS_SETTINGS_FLAGS
+              value: {{ .Values.tethys.settings.tethys_settings_flags | quote }}
+            - name: SITE_TITLE
+              value: {{ .Values.tethys.settings.portal_title | quote }}
+            - name: BRAND_TEXT
+              value: {{ .Values.tethys.settings.portal_title | quote }}
+            - name: PRIMARY_COLOR
+              value: {{ .Values.tethys.settings.primary_color | quote }}
+            - name: SECONDARY_COLOR
+              value: {{ .Values.tethys.settings.secondary_color | quote }}
+            - name: BACKGROUND_COLOR
+              value: {{ .Values.tethys.settings.background_color | quote }}
+            - name: CLIENT_MAX_BODY_SIZE
+              value: {{ .Values.tethys.settings.client_max_body_size | quote }}
+            - name: DATA_UPLOAD_MAX_MEMORY_SIZE
+              value: {{ .Values.tethys.settings.data_upload_max_memory_size | quote }}
+            - name: FILE_UPLOAD_MAX_MEMORY_SIZE
+              value: {{ .Values.tethys.settings.file_upload_max_memory_size | quote }}
+            - name: COPYRIGHT
+              value: {{ .Values.tethys.settings.copyright | quote }}
+            - name: NGINX_PORT
+              value: "8080"
+            - name: BING_API_KEY
+              value: {{ .Values.tethys.settings.bing_api_key | quote }}
+            - name: RECAPTCHA_PUBLIC_KEY
+              value: {{ .Values.tethys.settings.recaptcha_public_key | quote }}
+            - name: RECAPTCHA_PRIVATE_KEY
+              value: {{ .Values.tethys.settings.recaptcha_private_key | quote }}
+            - name: OTHER_SETTINGS
+              value: {{ .Values.tethys.settings.other_settings | quote }}
+            - name: ASGI_PROCESSES
+              value: {{ .Values.tethys.settings.asgi_processes | quote }}
+            - name: APP_STORE_SERVER_PASS
+              value: {{ .Values.tethys.apps.app_store.custom_settings.sudo_server_pass | quote }}
+            - name: APP_STORE_ENCRYPTION_KEY
+              value: {{ .Values.tethys.apps.app_store.custom_settings.encryption_key | quote }}
+            - name: APP_STORE_STORES_SETTINGS
+              value: {{ .Values.tethys.apps.app_store.custom_settings.stores_settings | toJson | quote }}
+            - name: CHANNEL_LAYERS_BACKEND
+              value: {{ .Values.tethys.settings.channel_layers_backend | quote }}
+            - name: CHANNEL_LAYERS_CONFIG 
+              value: "\"{'hosts':[{'host':\ {{ .Values.redis.fullnameOverride }}-master,\ 'port':\ 6379}]}\""
+            - name: APP_INSTALLER_USER_EMAIL 
+              value: {{ .Values.tethys.settings.app_installer_user_email | quote }}
+            - name: APP_INSTALLER_USER_NAME 
+              value: {{ .Values.tethys.settings.app_installer_user_name | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: tethys-persist-pv
+              mountPath: '/var/lib/tethys_persist'
+      volumes:
+        - name: tethys-persist-pv
+          persistentVolumeClaim:
+            claimName: tethys-persist-pvc
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

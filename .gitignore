@@ -1,2 +1,6 @@
 docker/data/
 docker/logs/
+helm/firoportal/values-*.yaml
+Chart.lock
+*.tgz
+docker/env/*.json

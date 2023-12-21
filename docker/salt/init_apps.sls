@@ -5,7 +5,7 @@
 {% set APP_INSTALLER_USER_NAME = salt['environ.get']('APP_INSTALLER_USER_NAME') %}
 {% set APP_STORE_SERVER_PASS = salt['environ.get']('APP_STORE_SERVER_PASS') %}
 {% set APP_STORE_STORES_SETTINGS = "'" + salt['environ.get']('APP_STORE_STORES_SETTINGS') + "'" %}
-{% set APP_STORE_ENCRYPTION_KEY = salt['environ.get']('APP_STORE_ENCRYPTION_KEY') %}
+{% set APP_STORE_ENCRYPTION_KEY = "'" + salt['environ.get']('APP_STORE_ENCRYPTION_KEY') + "'" %}
 {% set POSTGIS_SERVICE_NAME = 'tethys_postgis' %}
 
 Sync_Apps:
