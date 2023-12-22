@@ -27,6 +27,7 @@ RUN apt-get update && \
 
     # Install package requirements
 RUN pip install --no-cache-dir --quiet -r requirements.txt
+RUN file="$(ls -1 ${TETHYS_HOME}/apps/tethysapp-tethys_app_store/tethysapp/app_store/scripts/)" && echo $file
 
     # Tethys App Store
 RUN cd ${TETHYS_HOME}/apps/tethysapp-tethys_app_store && \
