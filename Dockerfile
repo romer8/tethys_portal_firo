@@ -23,13 +23,13 @@ COPY requirements.txt .
 
 # Install dos2unix to convert windows saved bash files to work in unix
 RUN apt-get update && \
-    apt-get install dos2unix && \
+    apt-get install dos2unix
 
     # Install package requirements
-    pip install --no-cache-dir --quiet -r requirements.txt && \
+RUN pip install --no-cache-dir --quiet -r requirements.txt
 
     # Tethys App Store
-    cd ${TETHYS_HOME}/apps/tethysapp-tethys_app_store && \
+RUN cd ${TETHYS_HOME}/apps/tethysapp-tethys_app_store && \
     dos2unix tethysapp/app_store/scripts/conda_install.sh && \
     dos2unix tethysapp/app_store/scripts/mamba_uninstall.sh && \
     dos2unix tethysapp/app_store/scripts/mamba_update.sh && \
