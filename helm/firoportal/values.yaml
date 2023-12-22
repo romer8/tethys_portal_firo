@@ -15,12 +15,11 @@ namespace:
     ephemeral_storage: '10Gi'
 
 image:
-  repository: tethys-portal-docker-firo
-  tag: latest
-  pullPolicy: Never
+  repository: "ghcr.io/firo-tethys/tethys_portal_firo"
+  tag: main
+  pullPolicy: Always
 
-imagePullSecrets:
-  - name: "gitlab-registry"
+imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 

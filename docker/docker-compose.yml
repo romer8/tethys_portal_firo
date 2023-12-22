@@ -19,7 +19,7 @@ services:
     ports:
       - "6379:6379"
   web:
-    image: tethys-portal-docker-firo:latest
+    image: ghcr.io/firo-tethys/tethys_portal_firo:main
     build: 
       context: ..
     restart: always
