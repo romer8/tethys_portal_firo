@@ -1,3 +1,4 @@
+{% set ALLOWED_HOSTS = salt['environ.get']('ALLOWED_HOSTS') %}
 {% set TETHYS_PERSIST = salt['environ.get']('TETHYS_PERSIST') %}
 {% set TETHYS_HOME = salt['environ.get']('TETHYS_HOME') %}
 
@@ -17,6 +18,12 @@ Create_PostGIS_Database_Service:
 Setup_In_Memory_Channel_Layer:
   cmd.run:
     - name: "tethys settings --set CHANNEL_LAYERS.default.BACKEND channels_redis.core.RedisChannelLayer"
+    - shell: /bin/bash
+    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/tethys_services_complete" ];"
+
+Set_Allowed_Hosts:
+  cmd.run:
+    - name: "tethys settings --set ALLOWED_HOSTS $(python -c 'from socket import gethostname, gethostbyname_ex; print(str({{ ALLOWED_HOSTS }}[1:-2].split(\", \") + list(set(gethostbyname_ex(gethostname())[2]))).replace(\" \", \"\"))')"
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/tethys_services_complete" ];"
 

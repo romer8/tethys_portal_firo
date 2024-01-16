@@ -1,3 +1,5 @@
+data "google_client_config" "default" {}
+
 # GKE cluster
 data "google_container_engine_versions" "gke_version" {
   location       = var.region
@@ -14,6 +16,7 @@ resource "google_container_cluster" "primary" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
+  node_locations = ["us-central1-c"]
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet.name
 }
@@ -37,8 +40,8 @@ resource "google_container_node_pool" "primary_nodes" {
       env = var.project_id
     }
 
-    # preemptible  = true
-    machine_type = "n1-standard-1"
+    #preemptible  = true
+    machine_type = "e2-standard-4"
     tags         = ["gke-node", "${var.project_id}-gke"]
     metadata = {
       disable-legacy-endpoints = "true"
