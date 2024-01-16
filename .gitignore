@@ -4,3 +4,8 @@ helm/firoportal/values-*.yaml
 Chart.lock
 *.tgz
 docker/env/*.json
+terraform/envs/dev.tfvars
+terraform/envs/prod.tfvars
+*.tfstate*
+.terraform/
+.terraform.lock.hcl

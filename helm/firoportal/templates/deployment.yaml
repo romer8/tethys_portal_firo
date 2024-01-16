@@ -28,7 +28,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: ALLOWED_HOSTS
-              value: "\"[{{- range .Values.ingress.hosts }}{{ .host }},{{- end }}]\""
+              value: \"[{{- range .Values.ingress.hosts }}{{ .host }},{{- end }}]\"
             - name: TETHYS_PUBLIC_HOST
               value: {{ (index .Values.ingress.hosts 0).host | quote }}
             - name: POSTGRES_PASSWORD 

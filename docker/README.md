@@ -3,8 +3,9 @@
 ## Build
 
 ```
-cd docker
 docker build -t tethys-portal-docker-firo .
+docker tag tethys-portal-docker-firo ghcr.io/firo-tethys/tethys_portal_firo:main
+docker push ghcr.io/firo-tethys/tethys_portal_firo:main
 ```
 
 ## Run
