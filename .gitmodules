@@ -1,4 +1,4 @@
 [submodule "tethysapp-tethys_app_store"]
 	path = tethysapp-tethys_app_store
 	url = https://github.com/Aquaveo/tethysapp-tethys_app_store
-	branch = firo_updates
+	branch = master
