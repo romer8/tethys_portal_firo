@@ -1,3 +1,5 @@
 semver
 gitpython
 pygithub
+django-allow-cidr
+toml
