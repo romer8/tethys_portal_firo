@@ -2,15 +2,15 @@
 	path = tethysapp-tethys_app_store
 	url = https://github.com/Aquaveo/tethysapp-tethys_app_store
 	branch = master
-[submodule "aquainsight"]
-	path = aquainsight
-	url = https://git.aquaveo.com/tethys/firo/aquainsight.git
-[submodule "aquainsight_plugin_cnrfc"]
-	path = aquainsight_plugin_cnrfc
-	url = https://github.com/FIRO-Tethys/aquainsight_plugin_cnrfc.git
-[submodule "aquainsight_plugin_usace"]
-	path = aquainsight_plugin_usace
-	url = https://github.com/FIRO-Tethys/aquainsight_plugin_usace.git
-[submodule "aquainsight_plugin_cw3e"]
-	path = aquainsight_plugin_cw3e
-	url = https://github.com/FIRO-Tethys/aquainsight_plugin_cw3e.git
+[submodule "tethysdash"]
+	path = tethysdash
+	url = https://git.aquaveo.com/tethys/firo/tethysdash.git
+[submodule "tethysdash_plugin_cnrfc"]
+	path = tethysdash_plugin_cnrfc
+	url = https://github.com/FIRO-Tethys/tethysdash_plugin_cnrfc.git
+[submodule "tethysdash_plugin_usace"]
+	path = tethysdash_plugin_usace
+	url = https://github.com/FIRO-Tethys/tethysdash_plugin_usace.git
+[submodule "tethysdash_plugin_cw3e"]
+	path = tethysdash_plugin_cw3e
+	url = https://github.com/FIRO-Tethys/tethysdash_plugin_cw3e.git

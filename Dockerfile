@@ -4,10 +4,10 @@ FROM tethysplatform/tethys-core:dev-py3.12-dj5.0
 # ADD FILES #
 #############
 COPY tethysapp-tethys_app_store ${TETHYS_HOME}/apps/tethysapp-tethys_app_store
-COPY aquainsight ${TETHYS_HOME}/apps/aquainsight
-COPY aquainsight_plugin_cnrfc ${TETHYS_HOME}/apps/aquainsight_plugin_cnrfc
-COPY aquainsight_plugin_cw3e ${TETHYS_HOME}/apps/aquainsight_plugin_cw3e
-COPY aquainsight_plugin_usace ${TETHYS_HOME}/apps/aquainsight_plugin_usace
+COPY tethysdash ${TETHYS_HOME}/apps/tethysdash
+COPY tethysdash_plugin_cnrfc ${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc
+COPY tethysdash_plugin_cw3e ${TETHYS_HOME}/apps/tethysdash_plugin_cw3e
+COPY tethysdash_plugin_usace ${TETHYS_HOME}/apps/tethysdash_plugin_usace
 
 ###################
 # ADD THEME FILES #
@@ -40,14 +40,14 @@ RUN cd ${TETHYS_HOME}/apps/tethysapp-tethys_app_store && \
     dos2unix tethysapp/app_store/scripts/mamba_update.sh && \
     tethys install -N
 
-# Aquainsight
-RUN cd ${TETHYS_HOME}/apps/aquainsight && \
+# TethysDash
+RUN cd ${TETHYS_HOME}/apps/tethysdash && \
     tethys install -N
-RUN cd ${TETHYS_HOME}/apps/aquainsight_plugin_cnrfc && \
+RUN cd ${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc && \
     python setup.py install
-RUN cd ${TETHYS_HOME}/apps/aquainsight_plugin_cw3e && \
+RUN cd ${TETHYS_HOME}/apps/tethysdash_plugin_cw3e && \
     python setup.py install
-RUN cd ${TETHYS_HOME}/apps/aquainsight_plugin_usace && \
+RUN cd ${TETHYS_HOME}/apps/tethysdash_plugin_usace && \
     python setup.py install
 
 ##################
