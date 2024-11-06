@@ -20,15 +20,6 @@ Sync_App_Persistent_Stores:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
 
-Set_Custom_Settings:
-  cmd.run:
-    - name: >
-        tethys app_settings set app_store sudo_server_pass {{ APP_STORE_SERVER_PASS }} &&
-        tethys app_settings set app_store stores_settings {{ APP_STORE_STORES_SETTINGS }} &&
-        tethys app_settings set app_store encryption_key {{ APP_STORE_ENCRYPTION_KEY }}
-    - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
-
 Set_Git_Identity:
   cmd.run:
     - name: >

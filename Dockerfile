@@ -34,11 +34,11 @@ RUN apt-get update && \
 RUN pip install --no-cache-dir --quiet -r requirements.txt
 
 # Tethys App Store
-RUN cd ${TETHYS_HOME}/apps/tethysapp-tethys_app_store && \
-    dos2unix tethysapp/app_store/scripts/mamba_install.sh && \
-    dos2unix tethysapp/app_store/scripts/mamba_uninstall.sh && \
-    dos2unix tethysapp/app_store/scripts/mamba_update.sh && \
-    tethys install -N
+# RUN cd ${TETHYS_HOME}/apps/tethysapp-tethys_app_store && \
+#     dos2unix tethysapp/app_store/scripts/mamba_install.sh && \
+#     dos2unix tethysapp/app_store/scripts/mamba_uninstall.sh && \
+#     dos2unix tethysapp/app_store/scripts/mamba_update.sh && \
+#     tethys install -N
 
 # TethysDash
 RUN cd ${TETHYS_HOME}/apps/tethysdash && \

@@ -28,6 +28,12 @@ Apply_Custom_Theme:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/custom_theme_setup_complete" ];"
 
+Set_Open_Portal:
+  cmd.run:
+    - name: tethys settings -s TETHYS_PORTAL_CONFIG.ENABLE_OPEN_SIGNUP true
+    - shell: /bin/bash
+    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/custom_theme_setup_complete" ];"
+
 Flag_Custom_Theme_Setup_Complete:
   cmd.run:
     - name: touch {{ TETHYS_PERSIST }}/custom_theme_setup_complete
