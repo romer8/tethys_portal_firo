@@ -28,6 +28,12 @@ Set_Git_Identity:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
 
+TethysDash_Alembic_Migrations:
+  cmd.run:
+    - name: alembic upgrade head
+    - cwd: {{ TETHYS_HOME }}/apps/tethysdash
+    - shell: /bin/bash
+
 Flag_Init_Apps_Setup_Complete:
   cmd.run:
     - name: touch {{ TETHYS_PERSIST }}/init_apps_setup_complete
