@@ -44,7 +44,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
 %post
     export PATH="/opt/conda/envs/tethys/bin:$PATH"
-    
+    export NGINX_USER=www
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
         dos2unix \
@@ -67,6 +67,53 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
         python setup.py install
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
         python setup.py install
+
+    
+    # Set permissions for the Salt directories
+    #https://docs.saltproject.io/en/latest/ref/configuration/nonroot.html
+    chmod -R 777 /etc/salt /var/cache/salt /var/log/salt /var/run/salt
+
+    # Set permissions for the Tethys directories
+    chmod -R 777 $TETHYS_HOME $TETHYS_PERSIST
+
+
+    # Set permissions for the Tethys directories (this is a salt stack job, but it cannot be done due to permission)
+    export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') ; find $TETHYS_PERSIST/workspaces ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/media ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/static ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
+    
+    chown -R $NGINX_USER: $TETHYS_PERSIST && chmod -R g+rw $TETHYS_PERSIST
+
+    # Set permissions for the ASGI and Nginx directories
+    mkdir -p /run/asgi
+    mkdir -p /var/lib/nginx/body
+    chown -R $NGINX_USER:$NGINX_USER /run /var/lib/nginx
+    chmod -R 777 /run /var/lib/nginx
+    
+
+    chmod +x $TETHYS_HOME/run.sh
+
+    # Remove the user=www line from the Supervisor config
+    sed -i '/^\s*user\s*=\s*www\s*$/d' /etc/supervisor/supervisord.conf
+
+    # nginx and supervisor permission
+    chmod -R 777 /etc/nginx
+    chmod -R 777 /etc/supervisor
+
+    #supervisor logs
+    chmod -R 0777 /var/log/supervisor
+    touch /var/log/supervisor/supervisord.log
+    chmod 0777 /var/log/supervisor/supervisord.log
+
+    # nginx logs
+    chown -R $NGINX_USER:$NGINX_USER /var/log/nginx
+    chmod -R 777 /var/log/nginx/
+
+    # tethys logs
+    touch /var/log/tethys/tethys.log
+    chown -R $NGINX_USER:$NGINX_USER /var/log/tethys/tethys.log
+    chmod 777 /var/log/tethys/tethys.log
+    
+    touch /var/log/tethys/salt.log
+    chmod 0777 /var/log/tethys/salt.log
 
 %runscript
     echo "Starting container... running run.sh"
