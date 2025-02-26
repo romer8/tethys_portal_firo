@@ -1,0 +1,74 @@
+Bootstrap: docker
+From: tethysplatform/tethys-core:dev-py3.12-dj5.0
+
+%labels
+    Author "aquaveollc"
+    Version "1.0"
+
+%environment
+    export TETHYS_HOME="/usr/lib/tethys"
+    export PATH="/opt/conda/envs/tethys/bin:$PATH"
+    export APP_INSTALLER_USER_EMAIL="you@email.com"
+    export APP_INSTALLER_USER_NAME="App Installer"
+    export APP_STORE_SERVER_PASS=pass
+    export APP_STORE_STORES_SETTINGS={}
+    export APP_STORE_ENCRYPTION_KEY=please_dont_use_default_passwords
+    export NGINX_PORT=8080
+    export TETHYS_PORT=8000
+    export CLIENT_MAX_BODY_SIZE='1G'
+    export DATA_UPLOAD_MAX_MEMORY_SIZE=1073741824
+    export FILE_UPLOAD_MAX_MEMORY_SIZE=1073741824
+    export COPYRIGHT='Copyright © 2024 Aquaveo, LLC'
+    export APP_INSTALLER_USER_EMAIL='fake@gmail.com'
+    export APP_INSTALLER_USER_NAME='fakeuser'
+    export CHANNEL_LAYERS_CONFIG="\"{'hosts':[{'host': '127.0.0.1', 'port': 6379}]}\""
+    export TETHYS_DB_PORT=5437
+    export TETHYS_DB_HOST=127.0.0.1
+%files
+    # Copy Tethys app folders into $TETHYS_HOME
+    tethysapp-tethys_app_store         /usr/lib/tethys/apps/tethysapp-tethys_app_store
+    tethysdash                         /usr/lib/tethys/apps/tethysdash
+    tethysdash_plugin_cnrfc            /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
+    tethysdash_plugin_cw3e             /usr/lib/tethys/apps/tethysdash_plugin_cw3e
+    tethysdash_plugin_usace            /usr/lib/tethys/apps/tethysdash_plugin_usace
+
+    # Custom theme files
+    images/                            /tmp/custom_theme/images/
+    templates/                         /tmp/custom_theme/templates/
+
+    # Requirements
+    requirements.txt                   /usr/lib/tethys/requirements.txt
+
+    # Salt files
+    docker/salt/                       /srv/salt/
+
+%post
+    export PATH="/opt/conda/envs/tethys/bin:$PATH"
+    
+    # (1) Update apt-get and install additional system packages
+    apt-get update && apt-get install -y \
+        dos2unix \
+    && rm -rf /var/lib/apt/lists/*
+
+    # (2) Install Python requirements
+    echo "Installing Python packages from requirements.txt..."
+    ls -la ${TETHYS_HOME}/apps
+    pip install --no-cache-dir --quiet -r ${TETHYS_HOME}/requirements.txt
+
+    # (3) Install TethysDash & its plugins
+    echo "Installing TethysDash..."
+    cd "${TETHYS_HOME}/apps/tethysdash" && \
+        tethys install -N
+
+    echo "Installing TethysDash plugins..."
+    cd "${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc" && \
+        python setup.py install
+    cd "${TETHYS_HOME}/apps/tethysdash_plugin_cw3e" && \
+        python setup.py install
+    cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
+        python setup.py install
+
+%runscript
+    echo "Starting container... running run.sh"
+    cd "$TETHYS_HOME"
+    exec /bin/bash run.sh
