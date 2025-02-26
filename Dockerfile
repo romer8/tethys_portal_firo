@@ -49,6 +49,7 @@ RUN cd ${TETHYS_HOME}/apps/tethysdash_plugin_cw3e && \
     python setup.py install
 RUN cd ${TETHYS_HOME}/apps/tethysdash_plugin_usace && \
     python setup.py install
+RUN mkdir -p -m 777 ${TETHYS_PERSIST}/data/tethysdash
 
 ##################
 # ADD SALT FILES #
