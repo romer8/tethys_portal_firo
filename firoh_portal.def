@@ -23,7 +23,11 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export APP_INSTALLER_USER_NAME='fakeuser'
     export CHANNEL_LAYERS_CONFIG="\"{'hosts':[{'host': '127.0.0.1', 'port': 6379}]}\""
     export TETHYS_DB_PORT=5437
-    export TETHYS_DB_HOST=127.0.0.1
+    export TETHYS_DB_HOST=localhost
+    export ALLOWED_HOSTS="\"[localhost, 127.0.0.1]\""
+    export CSRF_TRUSTED_ORIGINS="\"[http://localhost:8080, http://127.0.0.1:8080]\""
+    export MULTIPLE_APP_MODE=false
+    export STANDALONE_APP=tethysdash
 %files
     # Copy Tethys app folders into $TETHYS_HOME
     tethysapp-tethys_app_store         /usr/lib/tethys/apps/tethysapp-tethys_app_store
@@ -39,23 +43,60 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     # Requirements
     requirements.txt                   /usr/lib/tethys/requirements.txt
 
-    # Salt files
+    # Docker Salt files
     docker/salt/                       /srv/salt/
 
 %post
     export PATH="/opt/conda/envs/tethys/bin:$PATH"
     export NGINX_USER=www
+    export NODE_VERSION="20.12.2"
+    export NVM_DIR=/usr/local/nvm
+    export NODE_VERSION_DIR="$NVM_DIR/versions/node/v${NODE_VERSION}"
+    export PATH=${NODE_VERSION_DIR}/bin:$PATH
+    export NPM="$NODE_VERSION_DIR/bin/npm"
+    export TETHYS_PORTAL_HOST=""
+    export TETHYS_APP_ROOT_URL="/"
+    export TETHYS_LOADER_DELAY="500"
+    export TETHYS_DEBUG_MODE="false"
+    export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
+    export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
+    export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
+    
+
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
         dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-    # (2) Install Python requirements
+    #Install nvm
+    echo "Installing Node.js..."
+    mkdir -p $NVM_DIR
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | /bin/bash
+    . $NVM_DIR/nvm.sh 2>&1
+    nvm install $NODE_VERSION 2>&1
+    nvm alias default $NODE_VERSION 2>&1
+    nvm use default 2>&1
+    echo "Finished installing Node.js..."
+    
+    mv ${TETHYSDASH_DEV_REACT_CONFIG} ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_DEBUG_MODE.*#TETHYS_DEBUG_MODE = ${TETHYS_DEBUG_MODE}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_LOADER_DELAY.*#TETHYS_LOADER_DELAY = ${TETHYS_LOADER_DELAY}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_PORTAL_HOST.*#TETHYS_PORTAL_HOST = ${TETHYS_PORTAL_HOST}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_APP_ROOT_URL.*#TETHYS_APP_ROOT_URL = ${TETHYS_APP_ROOT_URL}#g" ${TETHYSDASH_PROD_REACT_CONFIG}
+
+
+    cd $TETHYSDASH_SRC_ROOT
+    $NPM install
+    $NPM run build
+    rm -rf node_modules
+
+
+    # Install Python requirements
     echo "Installing Python packages from requirements.txt..."
     ls -la ${TETHYS_HOME}/apps
-    pip install --no-cache-dir --quiet -r ${TETHYS_HOME}/requirements.txt
+    pip install --user --no-cache-dir --quiet -r ${TETHYS_HOME}/requirements.txt
 
-    # (3) Install TethysDash & its plugins
+    # Install TethysDash & its plugins
     echo "Installing TethysDash..."
     cd "${TETHYS_HOME}/apps/tethysdash" && \
         tethys install -N
@@ -67,7 +108,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
         python setup.py install
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
         python setup.py install
-
     
     # Set permissions for the Salt directories
     #https://docs.saltproject.io/en/latest/ref/configuration/nonroot.html
@@ -115,7 +155,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     touch /var/log/tethys/salt.log
     chmod 0777 /var/log/tethys/salt.log
 
-%runscript
+%startscript
     echo "Starting container... running run.sh"
-    cd "$TETHYS_HOME"
-    exec /bin/bash run.sh
+    exec /usr/lib/tethys/run.sh 2>&1 | tee /var/log/tethys/salt.log
