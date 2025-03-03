@@ -12,6 +12,9 @@
 {% set POSTGIS_SERVICE_NAME = 'tethys_postgis' %}
 {% set POSTGIS_SERVICE_URL = TETHYS_DB_SUPERUSER + ':' + TETHYS_DB_SUPERUSER_PASS + '@' + TETHYS_DB_HOST + ':' + TETHYS_DB_PORT %}
 
+{% set MULTIPLE_APP_MODE = salt['environ.get']('MULTIPLE_APP_MODE') %}
+{% set STANDALONE_APP = salt['environ.get']('STANDALONE_APP') %}
+
 Create_PostGIS_Database_Service:
   cmd.run:
     - name: "tethys services create persistent -n {{ POSTGIS_SERVICE_NAME }} -c {{ POSTGIS_SERVICE_URL }}"
@@ -30,12 +33,17 @@ Link_PostGIS_To_Dashboard_App:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/tethys_services_complete" ];"
 
-Update_ASGI_Supervisord_Config:
-  file.rename:
-    - source: {{ TETHYS_HOME }}/configs/asgi_supervisord.conf
-    - name: {{ TETHYS_HOME }}/asgi_supervisord.conf
-    - force: True
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/tethys_services_complete" ];"
+#Set single mode app
+{% if not MULTIPLE_APP_MODE %}
+Single_App_Mode:
+  cmd.run:
+    - name: >
+        tethys settings
+        --set MULTIPLE_APP_MODE {{ MULTIPLE_APP_MODE }}
+        --set STANDALONE_APP {{ STANDALONE_APP }}
+    - shell: /bin/bash
+    - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/tethys_services_complete' ]"
+{% endif %}
 
 Flag_Tethys_Services_Setup_Complete:
   cmd.run:

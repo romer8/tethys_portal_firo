@@ -6,6 +6,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     Version "1.0"
 
 %environment
+    export SHELL="/bin/bash"
     export TETHYS_HOME="/usr/lib/tethys"
     export PATH="/opt/conda/envs/tethys/bin:$PATH"
     export APP_INSTALLER_USER_EMAIL="you@email.com"
@@ -26,25 +27,33 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYS_DB_HOST=localhost
     export ALLOWED_HOSTS="\"[localhost, 127.0.0.1]\""
     export CSRF_TRUSTED_ORIGINS="\"[http://localhost:8080, http://127.0.0.1:8080]\""
-    export MULTIPLE_APP_MODE=false
+    export MULTIPLE_APP_MODE=true
     export STANDALONE_APP=tethysdash
+    export TETHYSDASH_DB_NAME=tethysdash_primary_db
+    export POSTGRES_PASSWORD=pass
 %files
     # Copy Tethys app folders into $TETHYS_HOME
-    tethysapp-tethys_app_store         /usr/lib/tethys/apps/tethysapp-tethys_app_store
-    tethysdash                         /usr/lib/tethys/apps/tethysdash
-    tethysdash_plugin_cnrfc            /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
-    tethysdash_plugin_cw3e             /usr/lib/tethys/apps/tethysdash_plugin_cw3e
-    tethysdash_plugin_usace            /usr/lib/tethys/apps/tethysdash_plugin_usace
+    # tethysapp-tethys_app_store              /usr/lib/tethys/apps/tethysapp-tethys_app_store
+    tethysdash                              /usr/lib/tethys/apps/tethysdash
+    tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
+    tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
+    tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
 
     # Custom theme files
-    images/                            /tmp/custom_theme/images/
-    templates/                         /tmp/custom_theme/templates/
+    images/                                 /usr/lib/tethys/custom_theme/images
+    templates/                              /usr/lib/tethys/custom_theme/templates
 
     # Requirements
-    requirements.txt                   /usr/lib/tethys/requirements.txt
+    requirements.txt                        /usr/lib/tethys/requirements.txt
 
     # Docker Salt files
-    docker/salt/                       /srv/salt/
+    singularity/salt/tethys_services.sls    /srv/salt/tethys_services.sls
+    singularity/salt/init_apps.sls          /srv/salt/init_apps.sls
+    singularity/salt/portal_theme.sls       /srv/salt/portal_theme.sls
+
+    singularity/salt/tethyscore.sls         /srv/salt/tethyscore.sls
+    singularity/salt/tethys_services.sls    /srv/salt/tethys_services.sls
+    singularity/salt/top.sls                /srv/salt/top.sls
 
 %post
     export PATH="/opt/conda/envs/tethys/bin:$PATH"
@@ -61,7 +70,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
     export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
     export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
-    
+    export TETHYS_PERSIST="/var/libe/tethys_persist"
 
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
@@ -109,6 +118,10 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
         python setup.py install
     
+    #Create dir for tethysdash setting
+    mkdir -p $TETHYS_PERSIST/data/tethysdash
+
+
     # Set permissions for the Salt directories
     #https://docs.saltproject.io/en/latest/ref/configuration/nonroot.html
     chmod -R 777 /etc/salt /var/cache/salt /var/log/salt /var/run/salt
