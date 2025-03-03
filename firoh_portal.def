@@ -168,4 +168,4 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
 %startscript
     echo "Starting container... running run.sh"
-    exec /usr/lib/tethys/run.sh 2>&1 | tee /var/log/tethys/salt.log
+    exec /usr/lib/tethys/run.sh --skip-perm 2>&1 | tee /var/log/tethys/salt.log
