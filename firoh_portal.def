@@ -11,9 +11,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export PATH="/opt/conda/envs/tethys/bin:$PATH"
     export APP_INSTALLER_USER_EMAIL="you@email.com"
     export APP_INSTALLER_USER_NAME="App Installer"
-    export APP_STORE_SERVER_PASS=pass
-    export APP_STORE_STORES_SETTINGS={}
-    export APP_STORE_ENCRYPTION_KEY=please_dont_use_default_passwords
     export NGINX_PORT=8080
     export TETHYS_PORT=8000
     export CLIENT_MAX_BODY_SIZE='1G'
