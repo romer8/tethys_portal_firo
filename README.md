@@ -1,4 +1,8 @@
-# Checkout
+# FIRO TETHYS PORTAL
+
+The FIRO Tethys portal was developed using the [Tethys Platform](https://www.tethysplatform.org/), and it contains the TethysDash application.
+
+## Checkout
 
 ```
 git clone --recursive-submodules https://github.com/FIRO-Tethys/tethys_portal_firo.git
