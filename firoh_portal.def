@@ -116,57 +116,53 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     #Create dir for tethysdash setting
     mkdir -p $TETHYS_PERSIST/data/tethysdash
 
-
     # Set permissions for the Salt directories
     #https://docs.saltproject.io/en/latest/ref/configuration/nonroot.html
     chmod -R 777 /etc/salt /var/cache/salt /var/log/salt /var/run/salt
 
-    # Set permissions for the Tethys directories
-    chmod -R 777 $TETHYS_HOME $TETHYS_PERSIST
-
+    # Set permissions for the Tethys directories, this is done on the Tethys_Persist_Permissions salt job at post_app.sls
+    chown -R $NGINX_USER: $TETHYS_PERSIST $TETHYS_HOME && chmod -R 777 $TETHYS_HOME $TETHYS_PERSIST
     
-    # Set permissions for the Tethys directories (this is part of the run.sh, but it cannot be done due to permission)
-    export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') ; find $TETHYS_PERSIST/workspaces ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/media ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/static ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
-    
-    chown -R $NGINX_USER: $TETHYS_PERSIST && chmod -R g+rw $TETHYS_PERSIST
-
     # Set permissions for the ASGI and Nginx directories
     # The directory creation of /run/asgi and the change of permissions cover the tethyscore.sls job /run/asgi
     mkdir -p /run/asgi
     mkdir -p /var/lib/nginx/body
-    chown -R $NGINX_USER:$NGINX_USER /run /var/lib/nginx
     chmod -R 777 /run /var/lib/nginx
-    
 
-    chmod +x $TETHYS_HOME/run.sh
-
-    # Remove the user=www line from the Supervisor config
+    # Remove the user=www line from the Supervisor config, no needed since is not the user that runs the process
     sed -i '/^\s*user\s*=\s*www\s*$/d' /etc/supervisor/supervisord.conf
 
-    # nginx and supervisor permission
-    chmod -R 777 /etc/nginx
-    chmod -R 777 /etc/supervisor
+    ## nginx and supervisor permission
+    chmod -R 777 /etc/nginx /etc/supervisor
 
-
-    # /var/log needs to have write permissions or supervisor will not be able to write the logs, and it will fail to start the nginx and asgi process
-    #supervisor logs
-    chmod -R 777 /var/log/supervisor
+    ## supervisor logs
+    ## /var/log needs to have write permissions or supervisor will not be able to write the logs, and it will fail to start the nginx and asgi process
     touch /var/log/supervisor/supervisord.log
-    chmod 777 /var/log/supervisor/supervisord.log
+    chmod -R 777 /var/log/supervisor
 
-    # nginx logs
-    chown -R $NGINX_USER:$NGINX_USER /var/log/nginx
+    ## nginx logs
     chmod -R 777 /var/log/nginx/
 
     # tethys logs
     touch /var/log/tethys/tethys.log
+    # This is a salt stack job to create an change permissions at /var/log/tethys/tethys.log on tethyscore.sls
     chown -R $NGINX_USER:$NGINX_USER /var/log/tethys/tethys.log
     chmod 777 /var/log/tethys/tethys.log
     
     touch /var/log/tethys/salt.log
-    chmod 0777 /var/log/tethys/salt.log
+    chmod 777 /var/log/tethys/salt.log
+    
+    # The following lines have been commented out since are 777, an are not required to be own by the nginx user by the salt jobs
+    # chown -R $NGINX_USER:$NGINX_USER /var/log/tethys/salt.log
+    # chown -R $NGINX_USER:$NGINX_USER /var/log/nginx
+    # chown -R $NGINX_USER:$NGINX_USER /var/log/supervisor
+    # chown -R $NGINX_USER:$NGINX_USER /etc/nginx /etc/supervisor
+    # chown -R $NGINX_USER:$NGINX_USER /run /var/lib/nginx
 
 %startscript
     echo "Starting container... running run.sh"
-    # permissions have been taken care by the post script. As a result, we use --skip-perm
     exec /usr/lib/tethys/run.sh --skip-perm 2>&1 | tee /var/log/tethys/salt.log
+    # permissions have been taken care by the post script. As a result, we use --skip-perm
+    # Set permissions for the Tethys directories (this is part of the run.sh, but it cannot be done due to permission)
+    # the following is what the run.sh does, but it cannot be done due to permission
+    # export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') ; find $TETHYS_PERSIST/workspaces ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/media ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/static ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
