@@ -32,8 +32,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYSDASH_DB_NAME=tethysdash_primary_db
     export POSTGRES_PASSWORD=pass
 %files
-    # Copy Tethys app folders into $TETHYS_HOME
-    # tethysapp-tethys_app_store              /usr/lib/tethys/apps/tethysapp-tethys_app_store
     tethysdash                              /usr/lib/tethys/apps/tethysdash
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
     tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
@@ -46,14 +44,15 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     # Requirements
     requirements.txt                        /usr/lib/tethys/requirements.txt
 
-    # Docker Salt files
+    # Singularity Salt files
     singularity/salt/tethys_services.sls    /srv/salt/tethys_services.sls
     singularity/salt/portal_theme.sls       /srv/salt/portal_theme.sls
     singularity/salt/tethyscore.sls         /srv/salt/tethyscore.sls
-    singularity/salt/post_app.sls          /srv/salt/post_app.sls
+    singularity/salt/post_app.sls           /srv/salt/post_app.sls
 
-    docker/salt/init_apps.sls          /srv/salt/init_apps.sls
-    docker/salt/top.sls                /srv/salt/top.sls
+    # Docker Salt files
+    docker/salt/init_apps.sls               /srv/salt/init_apps.sls
+    docker/salt/top.sls                     /srv/salt/top.sls
 
 %post
     export PATH="/opt/conda/envs/tethys/bin:$PATH"
