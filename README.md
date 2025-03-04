@@ -77,13 +77,25 @@ singularity instance start =--writable-tmpfs ../firo-portal-singularity_latest.s
 
 ### TroubleShooting
 
+If logs related to Tethys need to be seen or persisted. The `salt.log` file can be binded
+
 ```bash
 singularity instance start --writable-tmpfs -B <path_to_your_salt_log_file>:/var/log/tethys/salt.log <path_to_where_you_want_to_define_your_sif_file> <container_name>
 ```
 
-e.g
+For example
+
 ```bash
 mkdir -p /tmp/logs/tethys
 touch /tmp/logs/tethys/salt.log
 singularity instance start =--writable-tmpfs -B /tmp/logs/tethys/salt.log:/var/log/tethys/salt.log ../firo-portal-singularity_latest.sif firo_portal
 ```
+
+On another terminal, you can use `tail` the logs
+
+e.g.
+
+```bash
+tail -f -n 100 /tmp/logs/tethys/salt.log
+```
+
