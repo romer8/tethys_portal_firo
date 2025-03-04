@@ -62,13 +62,13 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export PATH=${NODE_VERSION_DIR}/bin:$PATH
     export NPM="$NODE_VERSION_DIR/bin/npm"
     export TETHYS_PORTAL_HOST=""
-    export TETHYS_APP_ROOT_URL="/"
+    export TETHYS_APP_ROOT_URL="/apps/tethysdash/"
     export TETHYS_LOADER_DELAY="500"
     export TETHYS_DEBUG_MODE="false"
     export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
     export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
     export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
-    export TETHYS_PERSIST="/var/libe/tethys_persist"
+    export TETHYS_PERSIST="/var/lib/tethys_persist"
 
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
@@ -100,7 +100,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     # Install Python requirements
     echo "Installing Python packages from requirements.txt..."
-    ls -la ${TETHYS_HOME}/apps
     pip install --user --no-cache-dir --quiet -r ${TETHYS_HOME}/requirements.txt
 
     # Install TethysDash & its plugins
