@@ -59,44 +59,6 @@ jobs:
         run: |
            echo "${{ secrets.KEY_PASSPHRASE }}" | singularity sign --keyidx 0 singularity-firo-tethys-portal.sif
 
-
-      - name: Login and Push Singularity Image
-        env:
-           SYLABS_AUTH_TOKEN: ${{ secrets.SYLABS_AUTH_TOKEN }}
-        run: |
-           # Debug: Check token length (don't print the actual token)
-           echo "Token length: ${#SYLABS_AUTH_TOKEN}"
-        
-           # Create a temporary file for the token
-           TOKEN_FILE=$(mktemp)
-           echo "$SYLABS_AUTH_TOKEN" > "$TOKEN_FILE"
-        
-           # Debug: Check file content length
-           echo "Token file content length: $(wc -c < "$TOKEN_FILE")"
-        
-           # Attempt to login
-           if singularity remote login --tokenfile "$TOKEN_FILE"; then
-              echo "Login successful"
-              # 1) Check if the image exists by searching for the exact tag
-              #    We grep for 'latest_x86' to confirm a match
-              echo "Searching for existing image: library://gioelkin/firo-tethys/singularity-firo-tethys-portal:latest_x86"
-              if singularity search singularity-firo-tethys-portal | grep -q 'latest_x86'; then
-                echo "Image found in library, deleting it first..."
-                singularity delete --force library://gioelkin/firo-tethys/singularity-firo-tethys-portal:latest_x86
-              else
-                echo "Image does not exist, skipping delete step."
-              fi
-
-              # 2) Now push the new image
-              singularity push singularity-firo-tethys-portal.sif library://gioelkin/firo-tethys/singularity-firo-tethys-portal:latest_x86              
-           else
-              echo "Login failed"
-              exit 1
-           fi
-        
-           # Clean up
-           rm "$TOKEN_FILE"
-
       - name: Configure ORAS Remote
         run: |
           # Add a new remote named 'ghcr' pointing to oras://ghcr.io
@@ -104,11 +66,13 @@ jobs:
 
       - name: Login and Push to GitHub Registry
         env:
-          IMAGE_NAME: firo-tethys/singularity-firo-tethys-portal
+          IMAGE_NAME: romer8/tethys_portal_firo
           GHCR_USERNAME: ${{ github.actor }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
         run: |
-          # Login to the 'ghcr' remote with your GitHub token
-          echo "${{ secrets.GITHUB_TOKEN }}" | singularity remote login -u "${{ env.GHCR_USERNAME }}" --password-stdin ghcr
-
-          # Push the image to the 'ghcr' remote with the desired tag
-          singularity push singularity-firo-tethys-portal.sif oras://ghcr.io/${{ env.IMAGE_NAME }}:latest_x86
+          # Login to the 'ghcr' remote with your *personal access token*, not the built-in GITHUB_TOKEN
+          echo "${GHCR_PAT}" | singularity remote login -u "${GHCR_USERNAME}" --password-stdin ghcr
+      
+          # Push to ghcr.io
+          singularity push singularity-firo-tethys-portal.sif \
+            oras://ghcr.io/${IMAGE_NAME}:latest_x86
